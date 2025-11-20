@@ -10,6 +10,7 @@ use App\Models\ContestSetting;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class BotController extends Controller
 {
@@ -336,5 +337,21 @@ class BotController extends Controller
             'chat_id' => $chatId,
             'text' => $message,
         ]);
+    }
+
+    public function setBotCommands()
+    {
+        $commands = [
+            [
+                'command' => 'start',
+                'description' => 'Botni ishga tushirish / Start the bot',
+            ]
+        ];
+
+        Telegram::bot('mybot')->setMyCommands([
+            'commands' => $commands,
+        ]);
+
+        Log::info("Bot commands set successfully!");
     }
 }

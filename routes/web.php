@@ -29,3 +29,9 @@ Route::post('/students', [StudentController::class, 'store'])->name('students.st
 Route::delete('/students/{student}', [StudentController::class, 'destroyStudent'])->name('students.destroy');
 Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
 Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
+
+
+Route::get('/set-commands', function (\App\Http\Controllers\BotController $botService) {
+    $botService->setBotCommands();
+    return 'Commands set successfully!';
+});
