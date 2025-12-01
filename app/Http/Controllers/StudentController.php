@@ -27,8 +27,10 @@ class StudentController extends Controller
             'mentor_name' => 'nullable|string|max:255',
         ]);
 
+        $lastContest = ContestSetting::latest()->first();
+
         Student::create([
-            'contest_id' => 1,
+            'contest_id' => $lastContest->id ?? 1,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'mentor_name' => $request->mentor_name,
