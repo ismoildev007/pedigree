@@ -25,7 +25,7 @@ class AuthController extends Controller{
         }
 
         // shu telefon raqamli userni topamiz
-        $user = User::where('phone', "998888158822007")->first();
+        $user = User::where('phone_number', "998888158822007")->first();
 
         if (!$user) {
             return redirect()->route('login')->withErrors([
