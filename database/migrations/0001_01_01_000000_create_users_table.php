@@ -15,12 +15,19 @@ return new class extends Migration
             $table->id();
             $table->string('telegram_id')->unique();
             $table->string('first_name');
+            $table->string('last_name')->nullable();
+            $table->string('username')->nullable();
+            $table->string('language_code', 10)->default('uz');
+            $table->string('referral_code', 20)->unique()->nullable();
+            $table->unsignedBigInteger('referred_by')->nullable();
+            $table->boolean('is_blocked')->default(false);
+            $table->boolean('is_admin')->default(false);
+
+            $table->foreign('referred_by')->references('id')->on('users')->onDelete('set null');
+            $table->index('referral_code');
             $table->string('phone_number')->nullable();
-            $table->string('role')->nullable();
             $table->string('password')->nullable();
-            $table->unsignedBigInteger('voted_student_id')->nullable();
             $table->timestamps();
-            $table->foreign('voted_student_id')->references('id')->on('students')->onDelete('set null');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
