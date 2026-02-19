@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,20 +12,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('telegram_id')->unique();
-            $table->string('first_name');
-            $table->string('last_name')->nullable();
-            $table->string('username')->nullable();
-            $table->string('language_code', 10)->default('uz');
-            $table->string('referral_code', 20)->unique()->nullable();
-            $table->unsignedBigInteger('referred_by')->nullable();
-            $table->boolean('is_blocked')->default(false);
-            $table->boolean('is_admin')->default(false);
-
-            $table->foreign('referred_by')->references('id')->on('users')->onDelete('set null');
-            $table->index('referral_code');
-            $table->string('phone_number')->nullable();
-            $table->string('password')->nullable();
+            $table->string('name');
+            $table->string('email');
+            $table->string('password');
             $table->timestamps();
         });
 

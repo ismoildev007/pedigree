@@ -16,3 +16,5 @@ Artisan::command('avto:run', function () {
 Artisan::command('schedule:run', function (Schedule $schedule) {
     $schedule->command('avto:run')->everyFiveMinutes();
 });
+
+\Illuminate\Support\Facades\Schedule::command('interviews:process')->everyFifteenMinutes();
