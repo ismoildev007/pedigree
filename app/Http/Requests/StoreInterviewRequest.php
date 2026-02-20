@@ -27,6 +27,7 @@ class StoreInterviewRequest extends FormRequest
             'candidate_phone' => 'nullable|string|max:20',
             'start_time' => 'required|date|after:now',
             'end_time' => 'required|date|after:start_time',
+            'platform' => 'nullable|string|in:google_meet,zoom',
         ];
     }
 }

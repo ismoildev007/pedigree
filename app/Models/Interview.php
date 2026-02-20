@@ -16,6 +16,9 @@ class Interview extends Model
         'transcript',
         'ai_analysis',
         'status',
+        'platform',
+        'zoom_meeting_link',
+        'zoom_meeting_id',
     ];
 
     protected $casts = [

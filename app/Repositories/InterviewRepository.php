@@ -23,8 +23,11 @@ class InterviewRepository
             'start_time' => $data['start_time'],
             'end_time' => $data['end_time'],
             'status' => 'scheduled',
+            'platform' => $data['platform'] ?? 'google_meet',
             'google_meet_link' => $data['google_meet_link'] ?? null,
             'google_event_id' => $data['google_event_id'] ?? null,
+            'zoom_meeting_link' => $data['zoom_meeting_link'] ?? null,
+            'zoom_meeting_id' => $data['zoom_meeting_id'] ?? null,
         ]);
     }
 
