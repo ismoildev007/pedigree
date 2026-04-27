@@ -8,5 +8,3 @@ use App\Http\Controllers\InterviewController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
-Route::post('/interviews', [InterviewController::class, 'store']);

@@ -14,8 +14,3 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
 });
-
-use App\Http\Controllers\GoogleAuthController;
-
-Route::get('/google/auth', [GoogleAuthController::class, 'redirectToGoogle']);
-Route::get('/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
