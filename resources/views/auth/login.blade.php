@@ -1,41 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+@extends('layouts.app')
 
-<div class="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login</h2>
+@section('title', 'Login - Shajara')
 
-    <form action="{{ route('authenticate') }}" method="POST" class="space-y-5">
-        @csrf
-
-        <!-- PHONE INPUT -->
-        <div>
-            <input
-                id="phone"
-                type="text"
-                name="phone"
-                placeholder="Phone"
-                required
-                class="w-full px-4 py-3 rounded-xl border border-gray-300
-                           focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
+@section('content')
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Login</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ route('login') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone_number" class="form-control @error('phone_number') is-invalid @enderror" value="{{ old('phone_number') }}" required autofocus>
+                        @error('phone_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+                </form>
+                <div class="text-center mt-3">
+                    Don't have an account? <a href="{{ route('register') }}">Register here</a>
+                </div>
+            </div>
         </div>
-
-        <!-- LOGIN BUTTON -->
-        <button
-            type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl
-                       font-semibold transition duration-200"
-        >
-            Login
-        </button>
-    </form>
+    </div>
 </div>
-
-</body>
-</html>
+@endsection
