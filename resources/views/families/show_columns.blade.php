@@ -34,28 +34,161 @@
     @endif
 </div>
 
-<div class="card shadow-sm border-0 mb-5">
-    <div class="tree-container" id="treeContainer" style="min-height: 600px;">
-        <div class="tree" id="treeCanvas">
-            @if($roots->isNotEmpty())
-                <ul>
-                    @foreach($roots as $person)
-                        @include('families.partials.tree_node', ['person' => $person])
-                    @endforeach
-                </ul>
-            @else
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-users-slash fa-4x mb-3"></i>
-                    <h4>No members in this family yet.</h4>
-                </div>
-            @endif
-        </div>
+<style>
+    .poster-container {
+        overflow-x: auto;
+        padding: 40px;
+        background: #fdfdfc;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        min-height: 600px;
+    }
+    .poster-root-box {
+        background: #2b5c46; /* aesthetic dark green from image */
+        color: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        border: 4px solid #gold;
+        display: inline-block;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .poster-children-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: stretch;
+    }
+    .column-block {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        min-width: 250px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .column-header {
+        text-align: center;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ccc;
+    }
+    .column-header img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .poster-connector-line {
+        height: 2px;
+        background-color: #2b5c46;
+        width: 100%;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .poster-connector-line::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 30px;
+        background-color: #2b5c46;
+        top: -30px;
+        left: 50%;
+    }
+</style>
 
-        <div class="zoom-controls">
-            <button type="button" class="zoom-btn" onclick="zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
-            <button type="button" class="zoom-btn" onclick="zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
-            <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fas fa-sync-alt"></i></button>
-        </div>
+<div class="card shadow-sm border-0 mb-5">
+    <div class="poster-container text-center">
+        @if($roots->isNotEmpty())
+            @foreach($roots as $rootPerson)
+                <div class="mb-5" style="display: inline-block; text-align: left;">
+                    
+                    <!-- Root Node Banner -->
+                    <div class="text-center">
+                        <div class="poster-root-box">
+                            <div class="d-flex align-items-center justify-content-center gap-4">
+                                <!-- Root Person -->
+                                <div class="text-center">
+                                    @if($rootPerson->photo)
+                                        <img src="{{ Storage::url($rootPerson->photo) }}" class="rounded-circle mb-2" style="width: 70px; height: 70px; object-fit: cover; border: 2px solid white;">
+                                    @else
+                                        <i class="fas fa-{{ $rootPerson->gender == 'male' ? 'user' : 'user-nurse' }} fa-3x mb-2 text-light"></i>
+                                    @endif
+                                    <h5 class="mb-0">{{ $rootPerson->full_name }}</h5>
+                                </div>
+                                
+                                @if($rootPerson->spouses->isNotEmpty())
+                                    <div class="text-white fw-bold fs-5">ва</div>
+                                    <!-- Spouses -->
+                                    @foreach($rootPerson->spouses as $spouse)
+                                        <div class="text-center">
+                                            @if($spouse->photo)
+                                                <img src="{{ Storage::url($spouse->photo) }}" class="rounded-circle mb-2" style="width: 70px; height: 70px; object-fit: cover; border: 2px solid white;">
+                                            @else
+                                                <i class="fas fa-{{ $spouse->gender == 'male' ? 'user' : 'user-nurse' }} fa-3x mb-2 text-light"></i>
+                                            @endif
+                                            <h5 class="mb-0">{{ $spouse->full_name }}</h5>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @php
+                        $directChildren = $rootPerson->children;
+                        $spouseChildren = collect();
+                        foreach($rootPerson->spouses as $opSpouse) {
+                            $spouseChildren = $spouseChildren->merge($opSpouse->children);
+                        }
+                        $allChildren = $directChildren->merge($spouseChildren)->unique('id');
+                        
+                        $colors = ['#e8f5e9', '#e0f7fa', '#fce4ec', '#fff3e0', '#fff9c4', '#e3f2fd', '#f3e5f5'];
+                    @endphp
+
+                    @if($allChildren->isNotEmpty())
+                        <div class="poster-connector-line"></div>
+                        
+                        <div class="poster-children-container">
+                            @foreach($allChildren as $index => $child)
+                                @php $bgColor = $colors[$index % count($colors)]; @endphp
+                                <div class="column-block" style="background-color: {{ $bgColor }};">
+                                    <div class="column-header">
+                                        <div class="mb-2">
+                                            <span class="badge rounded-pill bg-dark">{{ $index + 1 }}</span>
+                                        </div>
+                                        @if($child->photo)
+                                            <img src="{{ Storage::url($child->photo) }}">
+                                        @else
+                                            <div class="d-inline-flex justify-content-center align-items-center rounded-circle mb-2" style="width: 60px; height: 60px; background: white; border: 2px solid #ccc;">
+                                                <i class="fas fa-{{ $child->gender == 'male' ? 'user' : 'user-nurse' }} fa-2x text-muted"></i>
+                                            </div>
+                                        @endif
+                                        <h5 class="fw-bold mb-0" style="color: #333;">{{ $child->first_name }}</h5>
+                                        <div class="text-muted small">{{ $child->birth_year ?? '?' }} - {{ $child->death_year ?? 'Hozir' }}</div>
+                                    </div>
+                                    
+                                    <div class="descendants-list">
+                                        <div class="text-center mb-3">
+                                            <strong class="border-bottom border-dark pb-1">{{ $child->first_name }} avlodi</strong>
+                                        </div>
+                                        @include('families.partials.column_descendants', ['person' => $child])
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-users-slash fa-4x mb-3"></i>
+                <h4>No members in this family yet.</h4>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -277,126 +410,6 @@
         document.getElementById('edit_birth_year').value = person.birth_year ? person.birth_year : '';
         document.getElementById('edit_death_year').value = person.death_year ? person.death_year : '';
         document.getElementById('edit_description').value = person.description ? person.description : '';
-    }
-
-    // Zoom and Pan Logic
-    const container = document.getElementById('treeContainer');
-    const canvas = document.getElementById('treeCanvas');
-    
-    let scale = 1;
-    let translateX = 0;
-    let translateY = 0;
-    let isDragging = false;
-    let startX, startY;
-
-    function updateTransform() {
-        if (scale < 0.1) scale = 0.1;
-        if (scale > 3) scale = 3;
-        canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-    }
-
-    // Initial centering and scale
-    window.addEventListener('load', () => {
-        const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        
-        // Default zoom for mobile
-        if (window.innerWidth < 768) {
-            scale = 0.7;
-        }
-        
-        updateTransform();
-    });
-
-    container.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return; // Only left click
-        isDragging = true;
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
-        updateTransform();
-    });
-
-    window.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-
-    // Disable wheel zoom as per user request (only allow +/- buttons)
-    /*
-    container.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        // ...
-    }, { passive: false });
-    */
-
-    function zoomIn() {
-        scale += 0.2;
-        updateTransform();
-    }
-
-    function zoomOut() {
-        scale -= 0.2;
-        updateTransform();
-    }
-
-    function resetZoom() {
-        scale = 1;
-        const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        translateY = 0;
-        updateTransform();
-    }
-
-    // Touch Support for Mobile
-    let lastTouchX, lastTouchY;
-    let initialPinchDistance = 0;
-
-    container.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-            isDragging = true;
-            lastTouchX = e.touches[0].clientX - translateX;
-            lastTouchY = e.touches[0].clientY - translateY;
-        } else if (e.touches.length === 2) {
-            isDragging = false;
-            initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
-        }
-    }, { passive: false });
-
-    container.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (e.touches.length === 1 && isDragging) {
-            translateX = e.touches[0].clientX - lastTouchX;
-            translateY = e.touches[0].clientY - lastTouchY;
-            updateTransform();
-        } else if (e.touches.length === 2) {
-            const currentDistance = getDistance(e.touches[0], e.touches[1]);
-            const zoomFactor = currentDistance / initialPinchDistance;
-            
-            // Dampen zoom sensitivity specifically for mobile touch
-            const smoothedFactor = 1 + (zoomFactor - 1) * 0.15;
-            
-            if (Math.abs(smoothedFactor - 1) > 0.005) {
-                scale *= smoothedFactor;
-                initialPinchDistance = currentDistance;
-                updateTransform();
-            }
-        }
-    }, { passive: false });
-
-    container.addEventListener('touchend', () => {
-        isDragging = false;
-        initialPinchDistance = 0;
-    });
-
-    function getDistance(t1, t2) {
-        return Math.sqrt(Math.pow(t1.clientX - t2.clientX, 2) + Math.pow(t1.clientY - t2.clientY, 2));
     }
 </script>
 @endsection

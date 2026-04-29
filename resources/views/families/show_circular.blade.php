@@ -35,28 +35,50 @@
 </div>
 
 <div class="card shadow-sm border-0 mb-5">
-    <div class="tree-container" id="treeContainer" style="min-height: 600px;">
-        <div class="tree" id="treeCanvas">
-            @if($roots->isNotEmpty())
-                <ul>
-                    @foreach($roots as $person)
-                        @include('families.partials.tree_node', ['person' => $person])
-                    @endforeach
-                </ul>
-            @else
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-users-slash fa-4x mb-3"></i>
-                    <h4>No members in this family yet.</h4>
-                </div>
-            @endif
-        </div>
-
-        <div class="zoom-controls">
-            <button type="button" class="zoom-btn" onclick="zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
-            <button type="button" class="zoom-btn" onclick="zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
-            <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fas fa-sync-alt"></i></button>
+    <div class="tree-container" id="treeContainer" style="min-height: 800px; overflow: hidden; position: relative; background: #fafafa;">
+        <div id="treeCanvas" style="position: absolute; width: 10000px; height: 10000px; transform-origin: 0 0;">
+            <svg id="treeLines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible;"></svg>
+            <div id="treeNodes" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;"></div>
         </div>
     </div>
+</div>
+
+<style>
+    .circular-node {
+        position: absolute;
+        width: 140px;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 10;
+        font-size: 0.8rem;
+    }
+    .circular-node.female { border-top: 3px solid #e83e8c; }
+    .circular-node.male { border-top: 3px solid #0d6efd; }
+    .circular-node img { width: 40px; height: 40px; }
+    .spouse-container {
+        position: absolute;
+        width: 140px;
+        background: white;
+        border: 1px dashed #e83e8c;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        transform: translate(-50%, -50%);
+        z-index: 9;
+        font-size: 0.8rem;
+    }
+    .control-btns .btn { padding: 0.1rem 0.3rem; font-size: 0.7rem; margin: 1px; }
+</style>
+
+<div class="zoom-controls">
+    <button type="button" class="zoom-btn" onclick="zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
+    <button type="button" class="zoom-btn" onclick="zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
+    <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fas fa-sync-alt"></i></button>
 </div>
 
 <!-- Add Person Modal -->
@@ -233,50 +255,168 @@
     </div>
 </div>
 
+@php
+    function buildTreeData($person) {
+        $directChildren = $person->children;
+        $spouseChildren = collect();
+        foreach($person->spouses as $spouse) {
+            $spouseChildren = $spouseChildren->merge($spouse->children);
+        }
+        $allChildren = $directChildren->merge($spouseChildren)->unique('id');
+        
+        $childrenData = [];
+        foreach($allChildren as $child) {
+            $childrenData[] = buildTreeData($child);
+        }
+        
+        $spousesData = [];
+        foreach($person->spouses as $spouse) {
+            $spousesData[] = [
+                'id' => $spouse->id,
+                'name' => $spouse->full_name,
+                'gender' => $spouse->gender,
+                'photo' => $spouse->photo ? Storage::url($spouse->photo) : null,
+                'birth' => $spouse->birth_year,
+                'death' => $spouse->death_year,
+            ];
+        }
+
+        return [
+            'id' => $person->id,
+            'name' => $person->full_name,
+            'gender' => $person->gender,
+            'photo' => $person->photo ? Storage::url($person->photo) : null,
+            'birth' => $person->birth_year,
+            'death' => $person->death_year,
+            'spouses' => $spousesData,
+            'children' => $childrenData,
+            'raw_person' => $person // For buttons
+        ];
+    }
+
+    $treeRoots = [];
+    foreach($roots as $root) {
+        $treeRoots[] = buildTreeData($root);
+    }
+@endphp
+
 @endsection
 
 @section('scripts')
 <script>
-    function setParent(id, name) {
-        document.getElementById('modal_parent_id').value = id;
-        document.getElementById('modal_title').innerText = 'Add Child for ' + name;
+    const treeData = @json($treeRoots);
+    const canvasCenter = { x: 5000, y: 5000 };
+    const nodesContainer = document.getElementById('treeNodes');
+    const svgLayer = document.getElementById('treeLines');
+
+    function drawLine(x1, y1, x2, y2) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#a0aab5'); // Darker grey for better visibility
+        line.setAttribute('stroke-width', '2');
+        svgLayer.appendChild(line);
     }
 
-    function setSpouseTarget(id, name) {
-        const form = document.getElementById('addSpouseForm');
-        form.action = `/people/${id}/add-spouse`;
-        document.getElementById('spouse_modal_title').innerText = 'Add Spouse for ' + name;
+    function createNodeHtml(node, cx, cy) {
+        let photoHtml = '';
+        if (node.photo) {
+            photoHtml = `<img src="${node.photo}" class="rounded-circle mb-1" style="object-fit: cover;">`;
+        } else {
+            let icon = node.gender === 'male' ? 'user' : 'user-nurse';
+            photoHtml = `<i class="fas fa-${icon} fa-2x mb-1 text-secondary"></i>`;
+        }
         
-        const select = document.getElementById('spouse_select');
-        select.innerHTML = '<option value="">Searching...</option>';
+        // Build spouses if any
+        let spousesHtml = '';
+        node.spouses.forEach((sp, i) => {
+            let spPhoto = sp.photo ? `<img src="${sp.photo}" class="rounded-circle mb-1" style="object-fit: cover;">` : `<i class="fas fa-${sp.gender === 'male' ? 'user' : 'user-nurse'} fa-2x mb-1 text-muted"></i>`;
+            
+            // Position spouse slightly offset
+            spousesHtml += `
+            <div class="spouse-container ${sp.gender}" style="left: ${cx + 150}px; top: ${cy + (i*80)}px;">
+                ${spPhoto}
+                <div class="fw-bold">${sp.name}</div>
+                <div class="text-muted" style="font-size:0.7rem">(${sp.birth || '?'} - ${sp.death || 'Present'})</div>
+            </div>`;
+            
+            // Draw heart line
+            drawLine(cx, cy, cx + 150, cy + (i*80));
+        });
 
-        fetch(`/people/${id}/potential-spouses`)
-            .then(res => res.json())
-            .then(data => {
-                select.innerHTML = '<option value="">Select Spouse</option>';
-                if (data.length === 0) {
-                    select.innerHTML = '<option value="">No suitable candidates found</option>';
-                }
-                data.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.id;
-                    option.text = `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`;
-                    select.appendChild(option);
-                });
-            });
+        const html = `
+        ${spousesHtml}
+        <div class="circular-node ${node.gender}" style="left: ${cx}px; top: ${cy}px;">
+            ${photoHtml}
+            <div class="fw-bold">${node.name}</div>
+            <div class="text-muted mb-1" style="font-size:0.7rem">(${node.birth || '?'} - ${node.death || 'Present'})</div>
+        </div>`;
+        return html;
     }
 
-    function setEditData(button) {
-        const person = JSON.parse(button.getAttribute('data-person'));
-        const form = document.getElementById('editPersonForm');
-        form.action = '/people/' + person.id;
-        
-        document.getElementById('edit_first_name').value = person.first_name;
-        document.getElementById('edit_last_name').value = person.last_name;
-        document.getElementById('edit_gender').value = person.gender;
-        document.getElementById('edit_birth_year').value = person.birth_year ? person.birth_year : '';
-        document.getElementById('edit_death_year').value = person.death_year ? person.death_year : '';
-        document.getElementById('edit_description').value = person.description ? person.description : '';
+    function calculateLeaves(node) {
+        if (!node.children || node.children.length === 0) {
+            node.leaves = 1;
+            return 1;
+        }
+        let leaves = 0;
+        node.children.forEach(child => {
+            leaves += calculateLeaves(child);
+        });
+        node.leaves = leaves;
+        return leaves;
+    }
+
+    function renderTreeRadial(nodes, cx, cy, radiusStep, currentRadius, startAngle, endAngle) {
+        if (!nodes || nodes.length === 0) return;
+
+        const totalLeaves = nodes.reduce((sum, n) => sum + n.leaves, 0);
+        let currentStartAngle = startAngle;
+
+        nodes.forEach((node) => {
+            const angleSpan = (node.leaves / totalLeaves) * (endAngle - startAngle);
+            const myAngle = currentStartAngle + (angleSpan / 2);
+            
+            let x = cx;
+            let y = cy;
+            
+            if (currentRadius > 0) {
+                const rad = myAngle * Math.PI / 180;
+                x = canvasCenter.x + currentRadius * Math.cos(rad);
+                y = canvasCenter.y + currentRadius * Math.sin(rad);
+            }
+
+            // Draw line from parent to child
+            if (currentRadius > 0) {
+                drawLine(cx, cy, x, y);
+            }
+
+            // Create HTML
+            nodesContainer.insertAdjacentHTML('beforeend', createNodeHtml(node, x, y));
+
+            // Recurse for children
+            if (node.children && node.children.length > 0) {
+                // Determine next radius. If it's a root with multiple items, they stay at 0 but that's weird.
+                // Usually there is 1 root (currentRadius 0) which spans 360.
+                let nextRadius = currentRadius === 0 ? radiusStep : currentRadius + radiusStep;
+                let nextStart = currentRadius === 0 ? 0 : currentStartAngle;
+                let nextEnd = currentRadius === 0 ? 360 : currentStartAngle + angleSpan;
+                
+                renderTreeRadial(node.children, x, y, radiusStep, nextRadius, nextStart, nextEnd);
+            }
+
+            currentStartAngle += angleSpan;
+        });
+    }
+
+    // Init Render
+    if(treeData.length > 0) {
+        // Prepare weights
+        treeData.forEach(root => calculateLeaves(root));
+        // Draw
+        renderTreeRadial(treeData, canvasCenter.x, canvasCenter.y, 400, 0, 0, 360);
     }
 
     // Zoom and Pan Logic
@@ -298,12 +438,15 @@
     // Initial centering and scale
     window.addEventListener('load', () => {
         const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
+        const containerHeight = container.offsetHeight;
+        
+        // Center the 10000x10000 canvas (where root is at 5000,5000)
+        translateX = (containerWidth / 2) - 5000;
+        translateY = (containerHeight / 2) - 5000;
         
         // Default zoom for mobile
         if (window.innerWidth < 768) {
-            scale = 0.7;
+            scale = 0.5;
         }
         
         updateTransform();
@@ -346,11 +489,18 @@
     }
 
     function resetZoom() {
-        scale = 1;
         const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        translateY = 0;
+        const containerHeight = container.offsetHeight;
+        
+        translateX = (containerWidth / 2) - 5000;
+        translateY = (containerHeight / 2) - 5000;
+        
+        if (window.innerWidth < 768) {
+            scale = 0.5;
+        } else {
+            scale = 1;
+        }
+        
         updateTransform();
     }
 

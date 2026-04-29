@@ -50,13 +50,21 @@ class FamilyController extends Controller
             abort(403);
         }
 
+        $focusedPerson = null; $breadcrumbs = [];
+        $roots = $this->getRootsData($request, $family, $focusedPerson, $breadcrumbs);
+
+        return view('families.show', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
+    }
+
+    private function getRootsData(Request $request, Family $family, &$focusedPerson, &$breadcrumbs)
+    {
         $rootId = $request->get('root_id');
-        $focusedPerson = null;
         $breadcrumbs = [];
+        $focusedPerson = null;
 
         if ($rootId) {
             $focusedPerson = Person::findOrFail($rootId);
-            $roots = collect([$focusedPerson->load('childrenRecursive')]);
+            $roots = collect([$focusedPerson->load('childrenRecursive', 'spouses')]);
             
             // Build breadcrumbs
             $current = $focusedPerson;
@@ -71,11 +79,43 @@ class FamilyController extends Controller
         } else {
             $roots = $family->people()
                 ->whereNull('parent_id')
-                ->with('childrenRecursive')
+                ->with('childrenRecursive', 'spouses')
                 ->get();
         }
+        return $roots;
+    }
 
-        return view('families.show', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
+    public function showVertical(Request $request, Family $family)
+    {
+        // Check access
+        if ($family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+            abort(403);
+        }
+        $focusedPerson = null; $breadcrumbs = [];
+        $roots = $this->getRootsData($request, $family, $focusedPerson, $breadcrumbs);
+        return view('families.show_vertical', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
+    }
+
+    public function showCircular(Request $request, Family $family)
+    {
+        // Check access
+        if ($family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+            abort(403);
+        }
+        $focusedPerson = null; $breadcrumbs = [];
+        $roots = $this->getRootsData($request, $family, $focusedPerson, $breadcrumbs);
+        return view('families.show_circular', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
+    }
+
+    public function showColumns(Request $request, Family $family)
+    {
+        // Check access
+        if ($family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+            abort(403);
+        }
+        $focusedPerson = null; $breadcrumbs = [];
+        $roots = $this->getRootsData($request, $family, $focusedPerson, $breadcrumbs);
+        return view('families.show_columns', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
     }
 
     public function share(Request $request, Family $family)

@@ -21,6 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/families', [FamilyController::class, 'index'])->name('families.index');
     Route::post('/families', [FamilyController::class, 'store'])->name('families.store');
     Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
+    Route::get('/families/{family}/vertical', [FamilyController::class, 'showVertical'])->name('families.showVertical');
+    Route::get('/families/{family}/circular', [FamilyController::class, 'showCircular'])->name('families.showCircular');
+    Route::get('/families/{family}/columns', [FamilyController::class, 'showColumns'])->name('families.showColumns');
     Route::post('/families/{family}/share', [FamilyController::class, 'share'])->name('families.share');
 
     Route::post('/people', [PersonController::class, 'store'])->name('people.store');

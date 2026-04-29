@@ -34,13 +34,85 @@
     @endif
 </div>
 
+<style>
+    .tree-vertical {
+        display: inline-block;
+        white-space: nowrap;
+        transform-origin: 0 0;
+        transition: transform 0.1s ease-out;
+        user-select: none;
+        padding: 50px;
+    }
+    .tree-vertical ul {
+        display: flex;
+        flex-direction: column; /* siblings stack vertically */
+        list-style-type: none;
+        padding-left: 50px; /* Space between parent and spine */
+        margin-left: 0;
+        position: relative;
+    }
+    .tree-vertical li {
+        display: flex;
+        flex-direction: row; /* Parent card on left, children ul on right */
+        align-items: center; /* Center horizontally against the parent card */
+        position: relative;
+        padding-left: 50px; /* Space between spine and child card */
+        margin: 10px 0;
+    }
+    .tree-vertical > ul {
+        padding-left: 0;
+    }
+    .tree-vertical > ul > li {
+        padding-left: 0;
+    }
+    
+    /* Spine connectors */
+    .tree-vertical li::before, .tree-vertical li::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        border-left: 2px solid #ccc;
+    }
+    .tree-vertical li::before {
+        top: 0;
+        height: 50%;
+        border-bottom: 2px solid #ccc; /* Horizontal line branching to child */
+        width: 50px;
+    }
+    .tree-vertical li::after {
+        top: 50%;
+        bottom: 0px; 
+    }
+    
+    /* Hide specific spines to form corners */
+    .tree-vertical li:first-child::before {
+        border-left: 0; /* No spine going up */
+    }
+    .tree-vertical li:last-child::after {
+        display: none; /* No spine going down */
+    }
+    
+    /* Connector entering the ul from the parent */
+    .tree-vertical ul::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 50px;
+        border-top: 2px solid #ccc;
+    }
+    .tree-vertical > ul::before {
+        display: none; /* No inbound connection for root */
+    }
+</style>
+
 <div class="card shadow-sm border-0 mb-5">
     <div class="tree-container" id="treeContainer" style="min-height: 600px;">
-        <div class="tree" id="treeCanvas">
+        <div class="tree-vertical" id="treeCanvas">
             @if($roots->isNotEmpty())
                 <ul>
                     @foreach($roots as $person)
-                        @include('families.partials.tree_node', ['person' => $person])
+                        @include('families.partials.tree_node_vertical', ['person' => $person])
                     @endforeach
                 </ul>
             @else
