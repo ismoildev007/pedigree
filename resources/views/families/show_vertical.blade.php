@@ -369,7 +369,12 @@
 
     // Initial centering and scale
     window.addEventListener('load', () => {
-        resetZoom();
+        // Defer so browser finishes layout of inline-block tree
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                resetZoom();
+            });
+        });
     });
 
     container.addEventListener('mousedown', (e) => {
@@ -410,23 +415,35 @@
 
     function resetZoom() {
         const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
+        const containerHeight = container.offsetHeight;
         
         if (window.innerWidth < 768) {
-            scale = 0.85; // Keep readable
+            scale = 0.85;
         } else {
             scale = 1;
         }
         
-        // For Vertical layout (Left-to-Right), the root is on the left edge.
-        // It's better to align the left edge slightly padded, rather than perfectly center a huge wide tree.
-        if (canvasWidth * scale > containerWidth) {
-            translateX = 40; // Pin to left if it's wider than screen
+        // Find the first root node (first li > .person-card or the first li itself)
+        const firstRootLi = canvas.querySelector('ul > li');
+        
+        if (firstRootLi) {
+            // Get root node's position relative to the canvas
+            const rootRect = firstRootLi.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Root node's offset inside the canvas (unscaled)
+            const rootOffsetX = (rootRect.left - canvasRect.left) / scale;
+            const rootOffsetY = (rootRect.top - canvasRect.top) / scale;
+            const rootHeight = rootRect.height / scale;
+            
+            // Center the root node in the container
+            translateX = (containerWidth / 2) - ((rootOffsetX + 80) * scale); // 80 = approx half card width
+            translateY = (containerHeight / 2) - ((rootOffsetY + rootHeight / 2) * scale);
         } else {
-            translateX = (containerWidth - (canvasWidth * scale)) / 2;
+            translateX = 20;
+            translateY = 20;
         }
         
-        translateY = 40;
         updateTransform();
     }
 
