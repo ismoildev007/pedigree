@@ -19,8 +19,8 @@
                 @endif
             </ol>
         </nav>
-        <div class="d-flex align-items-center gap-3">
-            <h1>{{ $family->name }} Family Tree</h1>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+            <h2 class="mb-0">{{ $family->name }} Family Tree</h2>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
                 <i class="fas fa-share-alt me-1"></i> Share
             </button>
@@ -369,16 +369,7 @@
 
     // Initial centering and scale
     window.addEventListener('load', () => {
-        const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        
-        // Default zoom for mobile
-        if (window.innerWidth < 768) {
-            scale = 0.7;
-        }
-        
-        updateTransform();
+        resetZoom();
     });
 
     container.addEventListener('mousedown', (e) => {
@@ -418,11 +409,24 @@
     }
 
     function resetZoom() {
-        scale = 1;
         const containerWidth = container.offsetWidth;
         const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        translateY = 0;
+        
+        if (window.innerWidth < 768) {
+            scale = 0.85; // Keep readable
+        } else {
+            scale = 1;
+        }
+        
+        // For Vertical layout (Left-to-Right), the root is on the left edge.
+        // It's better to align the left edge slightly padded, rather than perfectly center a huge wide tree.
+        if (canvasWidth * scale > containerWidth) {
+            translateX = 40; // Pin to left if it's wider than screen
+        } else {
+            translateX = (containerWidth - (canvasWidth * scale)) / 2;
+        }
+        
+        translateY = 40;
         updateTransform();
     }
 

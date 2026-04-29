@@ -19,8 +19,8 @@
                 @endif
             </ol>
         </nav>
-        <div class="d-flex align-items-center gap-3">
-            <h1>{{ $family->name }} Family Tree</h1>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+            <h2 class="mb-0">{{ $family->name }} Family Tree</h2>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
                 <i class="fas fa-share-alt me-1"></i> Share
             </button>
@@ -411,5 +411,13 @@
         document.getElementById('edit_death_year').value = person.death_year ? person.death_year : '';
         document.getElementById('edit_description').value = person.description ? person.description : '';
     }
+
+    // Auto-scroll to center on mobile so Root Banner is fully visible immediately
+    window.addEventListener('load', () => {
+        const poster = document.querySelector('.poster-container');
+        if(poster && poster.scrollWidth > poster.clientWidth) {
+            poster.scrollLeft = (poster.scrollWidth - poster.clientWidth) / 2;
+        }
+    });
 </script>
 @endsection

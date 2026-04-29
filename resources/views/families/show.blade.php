@@ -19,8 +19,8 @@
                 @endif
             </ol>
         </nav>
-        <div class="d-flex align-items-center gap-3">
-            <h1>{{ $family->name }} Family Tree</h1>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+            <h2 class="mb-0">{{ $family->name }} Family Tree</h2>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
                 <i class="fas fa-share-alt me-1"></i> Share
             </button>
@@ -297,16 +297,7 @@
 
     // Initial centering and scale
     window.addEventListener('load', () => {
-        const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        
-        // Default zoom for mobile
-        if (window.innerWidth < 768) {
-            scale = 0.7;
-        }
-        
-        updateTransform();
+        resetZoom();
     });
 
     container.addEventListener('mousedown', (e) => {
@@ -346,11 +337,20 @@
     }
 
     function resetZoom() {
-        scale = 1;
         const containerWidth = container.offsetWidth;
         const canvasWidth = canvas.scrollWidth;
-        translateX = (containerWidth - canvasWidth) / 2;
-        translateY = 0;
+        
+        if (window.innerWidth < 768) {
+            scale = 0.85; // Keep legible on mobile, do not over-shrink
+        } else {
+            scale = 1;
+        }
+        
+        // Ensure minimum scale doesn't make it totally invisible
+        if (scale < 0.3) scale = 0.3;
+        
+        translateX = (containerWidth - (canvasWidth * scale)) / 2;
+        translateY = 30;
         updateTransform();
     }
 

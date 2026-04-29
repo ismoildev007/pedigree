@@ -19,8 +19,8 @@
                 @endif
             </ol>
         </nav>
-        <div class="d-flex align-items-center gap-3">
-            <h1>{{ $family->name }} Family Tree</h1>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+            <h2 class="mb-0">{{ $family->name }} Family Tree</h2>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
                 <i class="fas fa-share-alt me-1"></i> Share
             </button>
@@ -437,19 +437,7 @@
 
     // Initial centering and scale
     window.addEventListener('load', () => {
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        
-        // Center the 10000x10000 canvas (where root is at 5000,5000)
-        translateX = (containerWidth / 2) - 5000;
-        translateY = (containerHeight / 2) - 5000;
-        
-        // Default zoom for mobile
-        if (window.innerWidth < 768) {
-            scale = 0.5;
-        }
-        
-        updateTransform();
+        resetZoom();
     });
 
     container.addEventListener('mousedown', (e) => {
@@ -492,14 +480,14 @@
         const containerWidth = container.offsetWidth;
         const containerHeight = container.offsetHeight;
         
-        translateX = (containerWidth / 2) - 5000;
-        translateY = (containerHeight / 2) - 5000;
-        
         if (window.innerWidth < 768) {
-            scale = 0.5;
+            scale = 0.2; // Show more of the tree on small mobile screens
         } else {
-            scale = 1;
+            scale = 0.8;
         }
+
+        translateX = (containerWidth / 2) - (5000 * scale);
+        translateY = (containerHeight / 2) - (5000 * scale);
         
         updateTransform();
     }
