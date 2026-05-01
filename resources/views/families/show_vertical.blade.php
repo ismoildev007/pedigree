@@ -404,12 +404,29 @@
     */
 
     function zoomIn() {
-        scale += 0.2;
-        updateTransform();
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        applyZoom(0.2, containerWidth / 2, containerHeight / 2);
     }
 
     function zoomOut() {
-        scale -= 0.2;
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        applyZoom(-0.2, containerWidth / 2, containerHeight / 2);
+    }
+
+    function applyZoom(delta, focalX, focalY) {
+        const oldScale = scale;
+        scale += delta;
+        if (scale < 0.1) scale = 0.1;
+        if (scale > 3) scale = 3;
+        
+        const zoomRatio = scale / oldScale;
+        
+        // Focal zoom formula: x2 = focalX - (focalX - x1) * (s2 / s1)
+        translateX = focalX - (focalX - translateX) * zoomRatio;
+        translateY = focalY - (focalY - translateY) * zoomRatio;
+        
         updateTransform();
     }
 
@@ -450,6 +467,7 @@
     // Touch Support for Mobile
     let lastTouchX, lastTouchY;
     let initialPinchDistance = 0;
+    let initialPinchCenter = { x: 0, y: 0 };
 
     container.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
@@ -459,6 +477,11 @@
         } else if (e.touches.length === 2) {
             isDragging = false;
             initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
+            const rect = container.getBoundingClientRect();
+            initialPinchCenter = {
+                x: ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left,
+                y: ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top
+            };
         }
     }, { passive: false });
 
@@ -476,7 +499,19 @@
             const smoothedFactor = 1 + (zoomFactor - 1) * 0.15;
             
             if (Math.abs(smoothedFactor - 1) > 0.005) {
+                const oldScale = scale;
                 scale *= smoothedFactor;
+                if (scale < 0.1) scale = 0.1;
+                if (scale > 3) scale = 3;
+
+                const rect = container.getBoundingClientRect();
+                const focalX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+                const focalY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+
+                const zoomRatio = scale / oldScale;
+                translateX = focalX - (focalX - translateX) * zoomRatio;
+                translateY = focalY - (focalY - translateY) * zoomRatio;
+
                 initialPinchDistance = currentDistance;
                 updateTransform();
             }
