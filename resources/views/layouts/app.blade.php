@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Family Tree (Shajara)')</title>
+    <title>@yield('title', __('Family Tree (Shajara)'))</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -212,7 +212,23 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navContent">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe me-1"></i> 
+                            @if(app()->getLocale() == 'uz') UZ
+                            @elseif(app()->getLocale() == 'oz') O'Z
+                            @elseif(app()->getLocale() == 'ru') RU
+                            @else EN
+                            @endif
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item {{ app()->getLocale() == 'uz' ? 'active' : '' }}" href="{{ route('lang.switch', 'uz') }}">O'zbekcha (Lotin)</a></li>
+                            <li><a class="dropdown-item {{ app()->getLocale() == 'oz' ? 'active' : '' }}" href="{{ route('lang.switch', 'oz') }}">Ўзбекча (Кирилл)</a></li>
+                            <li><a class="dropdown-item {{ app()->getLocale() == 'ru' ? 'active' : '' }}" href="{{ route('lang.switch', 'ru') }}">Русский</a></li>
+                            <li><a class="dropdown-item {{ app()->getLocale() == 'en' ? 'active' : '' }}" href="{{ route('lang.switch', 'en') }}">English</a></li>
+                        </ul>
+                    </li>
                     @auth
                         <li class="nav-item">
                             <span class="nav-link text-white me-3">
@@ -223,16 +239,16 @@
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-link nav-link text-white" style="text-decoration: none;">
-                                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                    <i class="fas fa-sign-out-alt me-1"></i> {{ __('Logout') }}
                                 </button>
                             </form>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Login</a>
+                            <a class="nav-link text-white" href="{{ route('login') }}">{{ __('Login') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">Register</a>
+                            <a class="nav-link text-white" href="{{ route('register') }}">{{ __('Register') }}</a>
                         </li>
                     @endauth
                 </ul>

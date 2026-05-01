@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', $family->name . ' - Shajara')
+@section('title', $family->name . ' - ' . __('Shajara'))
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('families.index') }}">Families</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('families.index') }}">{{ __('Families') }}</a></li>
                 @if($focusedPerson)
                     <li class="breadcrumb-item"><a href="{{ route('families.show', $family) }}">{{ $family->name }}</a></li>
                     @foreach($breadcrumbs as $crumb)
@@ -20,16 +20,16 @@
             </ol>
         </nav>
         <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
-            <h2 class="mb-0">{{ $family->name }} Family Tree</h2>
+            <h2 class="mb-0">{{ $family->name }} {{ __('Family Tree') }}</h2>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
-                <i class="fas fa-share-alt me-1"></i> Share
+                <i class="fas fa-share-alt me-1"></i> {{ __('Share') }}
             </button>
             @include('families.partials.layout_switch')
         </div>
     </div>
     @if($roots->isEmpty())
         <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#addPersonModal">
-            <i class="fas fa-plus me-1"></i> Add Root Ancestor
+            <i class="fas fa-plus me-1"></i> {{ __('Add Root Ancestor') }}
         </button>
     @endif
 </div>
@@ -76,9 +76,9 @@
 </style>
 
 <div class="zoom-controls">
-    <button type="button" class="zoom-btn" onclick="zoomIn()" title="Zoom In"><i class="fas fa-plus"></i></button>
-    <button type="button" class="zoom-btn" onclick="zoomOut()" title="Zoom Out"><i class="fas fa-minus"></i></button>
-    <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fas fa-sync-alt"></i></button>
+    <button type="button" class="zoom-btn" onclick="zoomIn()" title="{{ __('Zoom In') }}"><i class="fas fa-plus"></i></button>
+    <button type="button" class="zoom-btn" onclick="zoomOut()" title="{{ __('Zoom Out') }}"><i class="fas fa-minus"></i></button>
+    <button type="button" class="zoom-btn" onclick="resetZoom()" title="{{ __('Reset Zoom') }}"><i class="fas fa-sync-alt"></i></button>
 </div>
 
 <!-- Add Person Modal -->
@@ -91,49 +91,49 @@
             
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal_title">Add Member</h5>
+                    <h5 class="modal-title" id="modal_title">{{ __('Add Member') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">First Name</label>
+                            <label class="form-label">{{ __('First Name') }}</label>
                             <input type="text" name="first_name" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Last Name</label>
+                            <label class="form-label">{{ __('Last Name') }}</label>
                             <input type="text" name="last_name" class="form-control" required value="{{ explode(' ', $family->name)[0] }}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Gender</label>
+                        <label class="form-label">{{ __('Gender') }}</label>
                         <select name="gender" class="form-select" required>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
+                            <option value="male">{{ __('Male') }}</option>
+                            <option value="female">{{ __('Female') }}</option>
                         </select>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Birth Year</label>
+                            <label class="form-label">{{ __('Birth Year') }}</label>
                             <input type="number" name="birth_year" class="form-control" min="1000" max="{{ date('Y') }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Death Year (nullable)</label>
+                            <label class="form-label">{{ __('Death Year (nullable)') }}</label>
                             <input type="number" name="death_year" class="form-control" min="1000" max="{{ date('Y') }}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Photo</label>
+                        <label class="form-label">{{ __('Photo') }}</label>
                         <input type="file" name="photo" class="form-control" accept="image/*">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Biography/Description</label>
+                        <label class="form-label">{{ __('Biography/Description') }}</label>
                         <textarea name="description" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Member</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save Member') }}</button>
                 </div>
             </div>
         </form>
@@ -152,49 +152,49 @@
             
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Member</h5>
+                    <h5 class="modal-title">{{ __('Edit Member') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">First Name</label>
+                            <label class="form-label">{{ __('First Name') }}</label>
                             <input type="text" name="first_name" id="edit_first_name" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Last Name</label>
+                            <label class="form-label">{{ __('Last Name') }}</label>
                             <input type="text" name="last_name" id="edit_last_name" class="form-control" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Gender</label>
+                        <label class="form-label">{{ __('Gender') }}</label>
                         <select name="gender" id="edit_gender" class="form-select" required>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
+                            <option value="male">{{ __('Male') }}</option>
+                            <option value="female">{{ __('Female') }}</option>
                         </select>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Birth Year</label>
+                            <label class="form-label">{{ __('Birth Year') }}</label>
                             <input type="number" name="birth_year" id="edit_birth_year" class="form-control" min="1000" max="{{ date('Y') }}">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Death Year (nullable)</label>
+                            <label class="form-label">{{ __('Death Year (nullable)') }}</label>
                             <input type="number" name="death_year" id="edit_death_year" class="form-control" min="1000" max="{{ date('Y') }}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Photo (Leave empty to keep current)</label>
+                        <label class="form-label">{{ __('Photo (Leave empty to keep current)') }}</label>
                         <input type="file" name="photo" class="form-control" accept="image/*">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Biography/Description</label>
+                        <label class="form-label">{{ __('Biography/Description') }}</label>
                         <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Member</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Update Member') }}</button>
                 </div>
             </div>
         </form>
@@ -208,19 +208,19 @@
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Share Family Tree</h5>
+                    <h5 class="modal-title">{{ __('Share Family Tree') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small">Enter the phone number of the person you want to share this shajara with. They must be a registered user.</p>
+                    <p class="text-muted small">{{ __('Enter the phone number of the person you want to share this shajara with. They must be a registered user.') }}</p>
                     <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
+                        <label class="form-label">{{ __('Phone Number') }}</label>
                         <input type="text" name="phone_number" class="form-control" required placeholder="e.g. 998901234567">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Share Access</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Share Access') }}</button>
                 </div>
             </div>
         </form>
@@ -234,21 +234,21 @@
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="spouse_modal_title">Add Spouse</h5>
+                    <h5 class="modal-title" id="spouse_modal_title">{{ __('Add Spouse') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-3">Выберите супруга(у) из существующих членов семьи. Поиск отфильтрован по противоположному полу и возрасту (младше выбранного лица).</p>
+                    <p class="text-muted small mb-3">{{ __('Select Spouse from existing family members. Search is filtered by opposite gender.') }}</p>
                     <div class="mb-3">
-                        <label class="form-label">Available Candidates</label>
+                        <label class="form-label">{{ __('Available Candidates') }}</label>
                         <select name="spouse_id" id="spouse_select" class="form-select" required>
-                            <option value="">Searching...</option>
+                            <option value="">{{ __('Searching...') }}</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-heart"></i> Link Spouse</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-heart"></i> {{ __('Link Spouse') }}</button>
                 </div>
             </div>
         </form>
@@ -339,7 +339,7 @@
             <div class="spouse-container ${sp.gender}" style="left: ${cx + 150}px; top: ${cy + (i*80)}px;">
                 ${spPhoto}
                 <div class="fw-bold">${sp.name}</div>
-                <div class="text-muted" style="font-size:0.7rem">(${sp.birth || '?'} - ${sp.death || 'Present'})</div>
+                <div class="text-muted" style="font-size:0.7rem">(${sp.birth || '?'} - ${sp.death || "{{ __('Present') }}"})</div>
             </div>`;
             
             // Draw heart line
@@ -351,7 +351,7 @@
         <div class="circular-node ${node.gender}" style="left: ${cx}px; top: ${cy}px;">
             ${photoHtml}
             <div class="fw-bold">${node.name}</div>
-            <div class="text-muted mb-1" style="font-size:0.7rem">(${node.birth || '?'} - ${node.death || 'Present'})</div>
+            <div class="text-muted mb-1" style="font-size:0.7rem">(${node.birth || '?'} - ${node.death || "{{ __('Present') }}"})</div>
         </div>`;
         return html;
     }

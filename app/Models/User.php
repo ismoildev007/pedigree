@@ -40,4 +40,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Family::class, 'family_user');
     }
+
+    public function isSuperAdmin()
+    {
+        return $this->phone_number === '880072117';
+    }
 }

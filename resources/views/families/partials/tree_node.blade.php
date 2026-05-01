@@ -9,12 +9,12 @@
             
             <h6 class="mb-0">{{ $person->full_name }}</h6>
             <small class="text-muted d-block mb-2">
-                ({{ $person->birth_year ?? '?' }} - {{ $person->death_year ?? 'Present' }})
+                ({{ $person->birth_year ?? '?' }} - {{ $person->death_year ?? __('Present') }})
             </small>
 
             <div class="d-flex gap-1 justify-content-center">
                 <a href="{{ route('families.show', ['family' => $person->family_id, 'root_id' => $person->id]) }}" 
-                    class="btn btn-sm btn-outline-info" title="Focus">
+                    class="btn btn-sm btn-outline-info" title="{{ __('Focus') }}">
                     <i class="fas fa-search-plus"></i>
                 </a>
                 <button type="button" class="btn btn-sm btn-outline-primary" 
@@ -25,15 +25,15 @@
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-success" 
                     data-bs-toggle="modal" data-bs-target="#addPersonModal"
-                    onclick="setParent({{ $person->id }}, '{{ addslashes($person->full_name) }}')" title="Add Child">
+                    onclick="setParent({{ $person->id }}, '{{ addslashes($person->full_name) }}')" title="{{ __('Add Child') }}">
                     <i class="fas fa-plus"></i>
                 </button>
                 <button type="button" class="btn btn-sm {{ $person->gender === 'female' ? 'btn-link text-muted' : 'btn-outline-danger' }}" 
                     data-bs-toggle="modal" data-bs-target="#addSpouseModal"
-                    onclick="setSpouseTarget({{ $person->id }}, '{{ addslashes($person->full_name) }}')" title="Add Spouse">
+                    onclick="setSpouseTarget({{ $person->id }}, '{{ addslashes($person->full_name) }}')" title="{{ __('Add Spouse') }}">
                     <i class="fas fa-heart"></i>
                 </button>
-                <form action="{{ route('people.destroy', $person) }}" method="POST" onsubmit="return confirm('Delete?')">
+                <form action="{{ route('people.destroy', $person) }}" method="POST" onsubmit="return confirm('{{ __('Delete?') }}')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-secondary">
