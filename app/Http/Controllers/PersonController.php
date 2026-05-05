@@ -110,4 +110,23 @@ class PersonController extends Controller
 
         return response()->json($results);
     }
+
+    public function updatePosition(Request $request, Person $person)
+    {
+        if (!auth()->user()->canManage($person->family)) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'x' => 'required|integer',
+            'y' => 'required|integer',
+        ]);
+
+        $person->update([
+            'workspace_x' => $validated['x'],
+            'workspace_y' => $validated['y'],
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

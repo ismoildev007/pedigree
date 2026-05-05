@@ -7,4 +7,6 @@
        class="btn btn-sm {{ Route::currentRouteName() == 'families.showCircular' ? 'btn-primary' : 'btn-outline-primary' }}">{{ __('Circular') }}</a>
     <a href="{{ route('families.showColumns', ['family' => $family, 'root_id' => request('root_id')]) }}" 
        class="btn btn-sm {{ Route::currentRouteName() == 'families.showColumns' ? 'btn-primary' : 'btn-outline-primary' }}">{{ __('Columns') }}</a>
+    <a href="{{ route('families.showWorkspace', ['family' => $family, 'root_id' => request('root_id')]) }}" 
+       class="btn btn-sm {{ Route::currentRouteName() == 'families.showWorkspace' ? 'btn-primary' : 'btn-outline-primary' }}">{{ __('Workspace') }}</a>
 </div>

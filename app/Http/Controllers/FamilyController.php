@@ -125,6 +125,23 @@ class FamilyController extends Controller
         return view('families.show_columns', compact('family', 'roots', 'focusedPerson', 'breadcrumbs'));
     }
 
+    public function showWorkspace(Request $request, Family $family)
+    {
+        // Check access
+        if (!auth()->user()->canManage($family)) {
+            abort(403);
+        }
+
+        $allPeople = Person::where('family_id', $family->id)
+            ->with(['spouses', 'children'])
+            ->get();
+
+        $focusedPerson = null; $breadcrumbs = [];
+        $roots = $this->getRootsData($request, $family, $focusedPerson, $breadcrumbs);
+        
+        return view('families.show_workspace', compact('family', 'allPeople', 'roots', 'focusedPerson', 'breadcrumbs'));
+    }
+
     public function share(Request $request, Family $family)
     {
         // Prepend +998 for validation and lookup

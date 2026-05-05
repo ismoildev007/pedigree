@@ -17,6 +17,8 @@ class Person extends Model
         'death_year',
         'photo',
         'description',
+        'workspace_x',
+        'workspace_y',
     ];
 
     public function family()
