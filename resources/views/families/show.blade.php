@@ -242,27 +242,39 @@
         document.getElementById('modal_title').innerText = "{{ __('Add Child for') }} " + name;
     }
 
+    let spouseSelect;
     function setSpouseTarget(id, name) {
         const form = document.getElementById('addSpouseForm');
         form.action = `/people/${id}/add-spouse`;
         document.getElementById('spouse_modal_title').innerText = "{{ __('Add Spouse for') }} " + name;
         
-        const select = document.getElementById('spouse_select');
-        select.innerHTML = '<option value="">{{ __("Searching...") }}</option>';
+        if (!spouseSelect) {
+            spouseSelect = new TomSelect('#spouse_select', {
+                valueField: 'id',
+                labelField: 'name',
+                searchField: 'name',
+                placeholder: "{{ __('Select Spouse') }}",
+                maxItems: 1
+            });
+        }
+
+        spouseSelect.clear();
+        spouseSelect.clearOptions();
+        spouseSelect.addOptions([{id: '', name: "{{ __('Searching...') }}"}]);
 
         fetch(`/people/${id}/potential-spouses`)
             .then(res => res.json())
             .then(data => {
-                select.innerHTML = '<option value="">{{ __("Select Spouse") }}</option>';
+                spouseSelect.clearOptions();
                 if (data.length === 0) {
-                    select.innerHTML = '<option value="">{{ __("No suitable candidates found") }}</option>';
+                    spouseSelect.addOptions([{id: '', name: "{{ __('No suitable candidates found') }}"}]);
+                } else {
+                    const options = data.map(p => ({
+                        id: p.id,
+                        name: `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`
+                    }));
+                    spouseSelect.addOptions(options);
                 }
-                data.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.id;
-                    option.text = `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`;
-                    select.appendChild(option);
-                });
             });
     }
 
@@ -355,19 +367,33 @@
 
     function resetZoom() {
         const containerWidth = container.offsetWidth;
-        const canvasWidth = canvas.scrollWidth;
+        const containerHeight = container.offsetHeight;
+        const firstRootNode = canvas.querySelector('.person-node');
         
         if (window.innerWidth < 768) {
-            scale = 0.85; // Keep legible on mobile, do not over-shrink
+            scale = 0.85;
         } else {
             scale = 1;
         }
         
-        // Ensure minimum scale doesn't make it totally invisible
-        if (scale < 0.3) scale = 0.3;
+        if (firstRootNode) {
+            const rootRect = firstRootNode.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Get unscaled relative position
+            const rootOffsetX = (rootRect.left - canvasRect.left) / scale;
+            const rootOffsetY = (rootRect.top - canvasRect.top) / scale;
+            const rootWidth = rootRect.width / scale;
+            const rootHeight = rootRect.height / scale;
+            
+            // Center focal point
+            translateX = (containerWidth / 2) - ((rootOffsetX + rootWidth / 2) * scale);
+            translateY = (containerHeight / 2) - ((rootOffsetY + rootHeight / 2) * scale);
+        } else {
+            translateX = (containerWidth - (canvas.scrollWidth * scale)) / 2;
+            translateY = 30;
+        }
         
-        translateX = (containerWidth - (canvasWidth * scale)) / 2;
-        translateY = 30;
         updateTransform();
     }
 

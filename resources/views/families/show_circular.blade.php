@@ -283,6 +283,7 @@
 
         return [
             'id' => $person->id,
+            'family_id' => $person->family_id,
             'name' => $person->full_name,
             'gender' => $person->gender,
             'photo' => $person->photo ? Storage::url($person->photo) : null,
@@ -304,6 +305,60 @@
 
 @section('scripts')
 <script>
+    function setParent(id, name) {
+        document.getElementById('modal_parent_id').value = id;
+        document.getElementById('modal_title').innerText = "{{ __('Add Child for') }} " + name;
+    }
+
+    let spouseSelect;
+    function setSpouseTarget(id, name) {
+        const form = document.getElementById('addSpouseForm');
+        form.action = `/people/${id}/add-spouse`;
+        document.getElementById('spouse_modal_title').innerText = "{{ __('Add Spouse for') }} " + name;
+        
+        if (!spouseSelect) {
+            spouseSelect = new TomSelect('#spouse_select', {
+                valueField: 'id',
+                labelField: 'name',
+                searchField: 'name',
+                placeholder: "{{ __('Select Spouse') }}",
+                maxItems: 1
+            });
+        }
+
+        spouseSelect.clear();
+        spouseSelect.clearOptions();
+        spouseSelect.addOptions([{id: '', name: "{{ __('Searching...') }}"}]);
+
+        fetch(`/people/${id}/potential-spouses`)
+            .then(res => res.json())
+            .then(data => {
+                spouseSelect.clearOptions();
+                if (data.length === 0) {
+                    spouseSelect.addOptions([{id: '', name: "{{ __('No suitable candidates found') }}"}]);
+                } else {
+                    const options = data.map(p => ({
+                        id: p.id,
+                        name: `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`
+                    }));
+                    spouseSelect.addOptions(options);
+                }
+            });
+    }
+
+    function setEditData(button) {
+        const person = JSON.parse(button.getAttribute('data-person'));
+        const form = document.getElementById('editPersonForm');
+        form.action = '/people/' + person.id;
+        
+        document.getElementById('edit_first_name').value = person.first_name;
+        document.getElementById('edit_last_name').value = person.last_name;
+        document.getElementById('edit_gender').value = person.gender;
+        document.getElementById('edit_birth_year').value = person.birth_year ? person.birth_year : '';
+        document.getElementById('edit_death_year').value = person.death_year ? person.death_year : '';
+        document.getElementById('edit_description').value = person.description ? person.description : '';
+    }
+
     const treeData = @json($treeRoots);
     const canvasCenter = { x: 5000, y: 5000 };
     const nodesContainer = document.getElementById('treeNodes');
@@ -346,12 +401,27 @@
             drawLine(cx, cy, cx + 150, cy + (i*80));
         });
 
+        // Add control buttons for the node
+        const controlsHtml = `
+            <div class="control-btns mt-2 d-flex gap-1 justify-content-center">
+                <a href="/families/${node.family_id}?root_id=${node.id}" class="btn btn-sm btn-outline-info" title="{{ __('Focus') }}"><i class="fas fa-search-plus"></i></a>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPersonModal" 
+                    data-person='${JSON.stringify(node.raw_person)}' onclick='setEditData(this)'><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPersonModal" 
+                    onclick="setParent(${node.id}, '${node.name.replace(/'/g, "\\'")}')" title="{{ __('Add Child') }}"><i class="fas fa-plus"></i></button>
+                <button type="button" class="btn btn-sm ${node.gender === 'female' ? 'btn-link text-muted' : 'btn-outline-danger'}" 
+                    data-bs-toggle="modal" data-bs-target="#addSpouseModal" 
+                    onclick="setSpouseTarget(${node.id}, '${node.name.replace(/'/g, "\\'")}')" title="{{ __('Add Spouse') }}"><i class="fas fa-heart"></i></button>
+            </div>
+        `;
+
         const html = `
         ${spousesHtml}
         <div class="circular-node ${node.gender}" style="left: ${cx}px; top: ${cy}px;">
             ${photoHtml}
             <div class="fw-bold">${node.name}</div>
             <div class="text-muted mb-1" style="font-size:0.7rem">(${node.birth || '?'} - ${node.death || "{{ __('Present') }}"})</div>
+            ${controlsHtml}
         </div>`;
         return html;
     }

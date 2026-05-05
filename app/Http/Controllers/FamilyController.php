@@ -13,15 +13,17 @@ class FamilyController extends Controller
     {
         $user = auth()->user();
         
-        // Families created by user OR shared with user.
+        // Families created by user OR shared with user. (Grouped to allow search)
         // If Super Admin, show ALL families.
         if ($user->isSuperAdmin()) {
             $query = Family::query();
         } else {
-            $query = Family::where('created_by', $user->id)
-                ->orWhereHas('sharedUsers', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                });
+            $query = Family::where(function($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereHas('sharedUsers', function($sq) use ($user) {
+                      $sq->where('user_id', $user->id);
+                  });
+            });
         }
         
         $query->withCount('people')->latest();
@@ -50,8 +52,8 @@ class FamilyController extends Controller
 
     public function show(Request $request, Family $family)
     {
-        // Check access (Bypass if Super Admin)
-        if (!auth()->user()->isSuperAdmin() && $family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+        // Check access
+        if (!auth()->user()->canManage($family)) {
             abort(403);
         }
 
@@ -92,8 +94,8 @@ class FamilyController extends Controller
 
     public function showVertical(Request $request, Family $family)
     {
-        // Check access (Bypass if Super Admin)
-        if (!auth()->user()->isSuperAdmin() && $family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+        // Check access
+        if (!auth()->user()->canManage($family)) {
             abort(403);
         }
         $focusedPerson = null; $breadcrumbs = [];
@@ -103,8 +105,8 @@ class FamilyController extends Controller
 
     public function showCircular(Request $request, Family $family)
     {
-        // Check access (Bypass if Super Admin)
-        if (!auth()->user()->isSuperAdmin() && $family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+        // Check access
+        if (!auth()->user()->canManage($family)) {
             abort(403);
         }
         $focusedPerson = null; $breadcrumbs = [];
@@ -114,8 +116,8 @@ class FamilyController extends Controller
 
     public function showColumns(Request $request, Family $family)
     {
-        // Check access (Bypass if Super Admin)
-        if (!auth()->user()->isSuperAdmin() && $family->created_by !== auth()->id() && !$family->sharedUsers->contains(auth()->id())) {
+        // Check access
+        if (!auth()->user()->canManage($family)) {
             abort(403);
         }
         $focusedPerson = null; $breadcrumbs = [];

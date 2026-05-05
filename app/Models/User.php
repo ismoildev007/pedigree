@@ -45,4 +45,17 @@ class User extends Authenticatable
     {
         return $this->phone_number === '880072117';
     }
+
+    public function canManage(Family $family)
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($family->created_by === $this->id) {
+            return true;
+        }
+
+        return $family->sharedUsers()->where('user_id', $this->id)->exists();
+    }
 }

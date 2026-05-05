@@ -314,27 +314,39 @@
         document.getElementById('modal_title').innerText = "{{ __('Add Child for') }} " + name;
     }
 
+    let spouseSelect;
     function setSpouseTarget(id, name) {
         const form = document.getElementById('addSpouseForm');
         form.action = `/people/${id}/add-spouse`;
         document.getElementById('spouse_modal_title').innerText = "{{ __('Add Spouse for') }} " + name;
         
-        const select = document.getElementById('spouse_select');
-        select.innerHTML = '<option value="">{{ __("Searching...") }}</option>';
+        if (!spouseSelect) {
+            spouseSelect = new TomSelect('#spouse_select', {
+                valueField: 'id',
+                labelField: 'name',
+                searchField: 'name',
+                placeholder: "{{ __('Select Spouse') }}",
+                maxItems: 1
+            });
+        }
+
+        spouseSelect.clear();
+        spouseSelect.clearOptions();
+        spouseSelect.addOptions([{id: '', name: "{{ __('Searching...') }}"}]);
 
         fetch(`/people/${id}/potential-spouses`)
             .then(res => res.json())
             .then(data => {
-                select.innerHTML = '<option value="">{{ __("Select Spouse") }}</option>';
+                spouseSelect.clearOptions();
                 if (data.length === 0) {
-                    select.innerHTML = '<option value="">{{ __("No suitable candidates found") }}</option>';
+                    spouseSelect.addOptions([{id: '', name: "{{ __('No suitable candidates found') }}"}]);
+                } else {
+                    const options = data.map(p => ({
+                        id: p.id,
+                        name: `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`
+                    }));
+                    spouseSelect.addOptions(options);
                 }
-                data.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.id;
-                    option.text = `${p.first_name} ${p.last_name} (${p.birth_year ?? '?'})`;
-                    select.appendChild(option);
-                });
             });
     }
 
