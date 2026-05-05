@@ -326,7 +326,10 @@
                     <p class="text-muted small">{{ __('Enter the phone number of the person you want to share this shajara with. They must be a registered user.') }}</p>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Phone Number') }}</label>
-                        <input type="text" name="phone_number" class="form-control" required placeholder="e.g. 998901234567">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted">+998</span>
+                            <input type="text" name="phone_number" class="form-control" required placeholder="901234567" maxlength="9" pattern="[0-9]{9}">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

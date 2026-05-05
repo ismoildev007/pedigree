@@ -43,7 +43,7 @@ class User extends Authenticatable
 
     public function isSuperAdmin()
     {
-        return $this->phone_number === '880072117';
+        return $this->phone_number === '+998880072117';
     }
 
     public function canManage(Family $family)

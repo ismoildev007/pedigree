@@ -21,9 +21,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Phone Number') }}</label>
-                        <input type="text" name="phone_number" class="form-control @error('phone_number') is-invalid @enderror" value="{{ old('phone_number') }}" required>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted">+998</span>
+                            <input type="text" name="phone_number" class="form-control @error('phone_number') is-invalid @enderror" value="{{ old('phone_number') }}" required placeholder="901234567" maxlength="9" pattern="[0-9]{9}">
+                        </div>
                         @error('phone_number')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-3">

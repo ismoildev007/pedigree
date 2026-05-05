@@ -127,6 +127,9 @@ class FamilyController extends Controller
 
     public function share(Request $request, Family $family)
     {
+        // Prepend +998 for validation and lookup
+        $request->merge(['phone_number' => '+998' . $request->phone_number]);
+
         $request->validate([
             'phone_number' => 'required|exists:users,phone_number',
         ]);

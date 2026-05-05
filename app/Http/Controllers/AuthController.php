@@ -20,6 +20,9 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Prepend +998 prefix
+        $credentials['phone_number'] = '+998' . $credentials['phone_number'];
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended(route('families.index'));
@@ -39,13 +42,19 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number' => 'required|string|unique:users,phone_number',
+            'phone_number' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        // Prepend +998 prefix and check unique
+        $phoneNumber = '+998' . $request->phone_number;
+        if (User::where('phone_number', $phoneNumber)->exists()) {
+            return back()->withErrors(['phone_number' => 'The phone number has already been taken.'])->withInput();
+        }
+
         $user = User::create([
             'name' => $request->name,
-            'phone_number' => $request->phone_number,
+            'phone_number' => $phoneNumber,
             'password' => Hash::make($request->password),
         ]);
 
